@@ -1,0 +1,197 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-board-table
+      author: dio-board-system
+      changes:
+        - createTable:
+            tableName: board
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 002-create-board-column-table
+      author: dio-board-system
+      changes:
+        - createTable:
+            tableName: board_column
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: column_order
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: kind
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: board_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_board_column_board
+                    references: board(id)
+                    deleteCascade: true
+
+  - changeSet:
+      id: 003-create-card-table
+      author: dio-board-system
+      changes:
+        - createTable:
+            tableName: card
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: board_column_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_card_board_column
+                    references: board_column(id)
+                    deleteCascade: true
+
+  - changeSet:
+      id: 004-create-block-card-table
+      author: dio-board-system
+      changes:
+        - createTable:
+            tableName: block_card
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: blocked_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: block_reason
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: unblocked_at
+                  type: TIMESTAMP
+              - column:
+                  name: unblock_reason
+                  type: TEXT
+
+  - changeSet:
+      id: 005-create-card-block-relationship-table
+      author: dio-board-system
+      changes:
+        - createTable:
+            tableName: card_block
+            columns:
+              - column:
+                  name: card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_card_block_card
+                    references: card(id)
+                    deleteCascade: true
+              - column:
+                  name: block_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_card_block_block
+                    references: block_card(id)
+                    deleteCascade: true
+        - addPrimaryKey:
+            tableName: card_block
+            columnNames: card_id, block_id
+
+  - changeSet:
+      id: 006-create-indexes
+      author: dio-board-system
+      changes:
+        - createIndex:
+            tableName: board_column
+            indexName: idx_board_column_board_id
+            columns:
+              - column:
+                  name: board_id
+        - createIndex:
+            tableName: board_column
+            indexName: idx_board_column_order
+            columns:
+              - column:
+                  name: board_id
+              - column:
+                  name: column_order
+        - createIndex:
+            tableName: card
+            indexName: idx_card_board_column_id
+            columns:
+              - column:
+                  name: board_column_id
+        - createIndex:
+            tableName: card_block
+            indexName: idx_card_block_card_id
+            columns:
+              - column:
+                  name: card_id
+        - createIndex:
+            tableName: block_card
+            indexName: idx_block_card_blocked_at
+            columns:
+              - column:
+                  name: blocked_at
+
+  - changeSet:
+      id: 007-add-unique-constraints
+      author: dio-board-system
+      changes:
+        - addUniqueConstraint:
+            tableName: board_column
+            columnNames: board_id, column_order
+            constraintName: uk_board_column_order
+        - addUniqueConstraint:
+            tableName: board_column
+            columnNames: board_id, kind
+            constraintName: uk_board_column_kind
